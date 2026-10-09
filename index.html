@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор опозданий | ВКСиИТ</title>
+    <style>
+        :root {
+            --text-color: #ffffff;
+            --input-bg: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            
+            /* ========================================= */
+            /* ВСТАВЬТЕ СЮДА СВОЮ КАРТИНКУ               */
+            /* ========================================= */
+            background-image: url('fon.jpg'); /* <-- ЗАМЕНИТЕ 'fon.jpg' на имя вашего файла */
+            background-size: cover;           /* Растянуть на весь экран */
+            background-position: center;      /* Центрировать */
+            background-attachment: fixed;     /* Фон не движется при прокрутке */
+            /* ========================================= */
+        }
+
+        /* Затемняющий слой поверх картинки, чтобы текст читался */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 10, 50, 0.5); /* Полупрозрачный темно-синий */
+            z-index: -1;
+        }
+
+        .calculator-container {
+            /* Прозрачный фон с размытием (эффект стекла) */
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 30px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            position: relative;
+        }
+
+        /* Декоративные элементы */
+        .calculator-container::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 10px;
+            height: 10px;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.6;
+        }
+        
+        .calculator-container::after {
+            content: '';
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            width: 30px;
+            height: 2px;
+            background: white;
+            opacity: 0.4;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 1.5em;
+            margin-top: 0;
+            margin-bottom: 25px;
+            letter-spacing: 1px;
+            font-weight: 600;
+            text-transform: uppercase;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+            opacity: 0.95;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+
+        input[type="time"] {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: var(--input-bg);
+            color: white;
+            font-size: 1.1em;
+            outline: none;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+
+        input[type="time"]:focus {
+            border-color: white;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        input[type="time"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            background: white;
+            color: #2a00a8;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(255, 255, 255, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .result-box {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-left: 5px solid white;
+            text-align: center;
+            min-height: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            transition: all 0.3s ease;
+            display: none;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .result-box.visible {
+            display: flex;
+        }
+
+        .result-time {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .result-status {
+            font-size: 1em;
+            line-height: 1.4;
+        }
+
+        .penalty {
+            color: #ffcccc;
+            font-weight: 900;
+            font-size: 1.3em;
+            margin-top: 5px;
+        }
+        
+        .no-penalty {
+            color: #ccffcc;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="calculator-container">
+        <h1>Калькулятор опозданий</h1>
+        <p style="text-align: center; font-size: 0.8em; opacity: 0.8; margin-bottom: 20px;">ВКСиИТ</p>
+        
+        <div class="input-group">
+            <label for="startTime">Время начала пары:</label>
+            <input type="time" id="startTime" value="08:30">
+        </div>
+
+        <div class="input-group">
+            <label for="arrivalTime">Время прихода студента:</label>
+            <input type="time" id="arrivalTime" value="08:45">
+        </div>
+
+        <button onclick="calculateDelay()">Рассчитать</button>
+
+        <div class="result-box" id="resultBox">
+            <div class="result-time" id="resultTime"></div>
+            <div class="result-status" id="resultStatus"></div>
+            <div class="penalty" id="resultPenalty"></div>
+        </div>
+    </div>
+
+    <script>
+        function calculateDelay() {
+            const startInput = document.getElementById('startTime').value;
+            const arrivalInput = document.getElementById('arrivalTime').value;
+            const resultBox = document.getElementById('resultBox');
+            const resultTime = document.getElementById('resultTime');
+            const resultStatus = document.getElementById('resultStatus');
+            const resultPenalty = document.getElementById('resultPenalty');
+
+            if (!startInput || !arrivalInput) {
+                resultBox.classList.add('visible');
+                resultTime.textContent = "Ошибка";
+                resultStatus.textContent = "Пожалуйста, укажите оба времени.";
+                resultPenalty.textContent = "";
+                return;
+            }
+
+            const [startHours, startMinutes] = startInput.split(':').map(Number);
+            const [arrivalHours, arrivalMinutes] = arrivalInput.split(':').map(Number);
+
+            const startTotalMinutes = startHours * 60 + startMinutes;
+            const arrivalTotalMinutes = arrivalHours * 60 + arrivalMinutes;
+
+            let diffMinutes = arrivalTotalMinutes - startTotalMinutes;
+
+            if (diffMinutes < 0) {
+                resultBox.classList.add('visible');
+                resultTime.textContent = "Вы не опоздали!";
+                resultStatus.textContent = "Вы пришли раньше начала пары.";
+                resultPenalty.textContent = "Отлично! 👍";
+                resultPenalty.className = "penalty no-penalty";
+                return;
+            }
+
+            if (diffMinutes === 0) {
+                resultBox.classList.add('visible');
+                resultTime.textContent = "Вы вовремя!";
+                resultStatus.textContent = "Опоздание составляет 0 минут.";
+                resultPenalty.textContent = "Отлично! 👍";
+                resultPenalty.className = "penalty no-penalty";
+                return;
+            }
+
+            resultBox.classList.add('visible');
+            resultTime.textContent = `Опоздание: ${diffMinutes} мин.`;
+            
+            let statusText = "";
+            let penaltyText = "";
+            let penaltyClass = "penalty";
+
+            if (diffMinutes <= 15) {
+                statusText = "Незначительное опоздание.";
+                penaltyText = "Без наказания";
+                penaltyClass = "penalty no-penalty";
+            } else if (diffMinutes > 15 && diffMinutes <= 60) {
+                statusText = "Существенное опоздание.";
+                penaltyText = "Н-ка (1)";
+            } else {
+                statusText = "Критическое опоздание.";
+                penaltyText = "Н-ка (2)";
+            }
+
+            resultStatus.textContent = statusText;
+            resultPenalty.textContent = penaltyText;
+            resultPenalty.className = penaltyClass;
+        }
+    </script>
+</body>
+</html>
